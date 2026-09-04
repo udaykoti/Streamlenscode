@@ -1,6 +1,6 @@
 import type { AnalysisResponse } from '../types';
 
-const API_BASE = '/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
 
 export async function analyzeCode(javaCode: string, testInput?: string): Promise<AnalysisResponse> {
   const response = await fetch(`${API_BASE}/analyze`, {
