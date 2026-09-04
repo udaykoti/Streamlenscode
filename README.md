@@ -145,6 +145,30 @@ docker compose up --build
 | Backend | http://localhost:8080 |
 | PostgreSQL | localhost:5432 |
 
+## Deployment
+
+### Vercel (frontend)
+
+The repo includes `vercel.json` at the root, which tells Vercel to treat `frontend/` as the project root and build it as a Vite app:
+
+```json
+{
+  "rootDirectory": "frontend",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite"
+}
+```
+
+Connect the Vercel project to this GitHub repo (Settings → Git → Connect Git Repository) so every push to `main` auto-deploys. Or deploy manually:
+
+```bash
+cd frontend
+npx vercel@latest --prod
+```
+
+> **Note:** The backend (Spring Boot) is not deployed on Vercel. For the UI's **Analyze** button to work in production, deploy the backend elsewhere (Render, Railway, EC2) and set the `VITE_API_BASE_URL` environment variable to its URL (e.g. `https://your-backend.example.com/api`).
+
 ## REST API
 
 | Endpoint | Method | Purpose |
