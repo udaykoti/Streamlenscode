@@ -1,0 +1,30 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: streamlens-backend
+
+streamlens:
+  executor:
+    timeout-ms: 10000
+    max-input-size: 10000
+    allowed-operations:
+      - filter
+      - map
+      - flatMap
+      - sorted
+      - distinct
+      - limit
+      - skip
+      - peek
+      - reduce
+      - collect
+      - toList
+      - toSet
+      - count
+      - findFirst
+      - findAny
+      - anyMatch
+      - allMatch
+      - noneMatch

@@ -1,0 +1,34 @@
+{
+  "samples": [
+    {
+      "name": "Basic filter-map",
+      "description": "Simple pipeline filtering and transforming integers",
+      "code": "List<Integer> numbers = List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25, 30);\n\nnumbers.stream()\n    .filter(n -> n > 10)\n    .map(n -> n * 2)\n    .toList();"
+    },
+    {
+      "name": "Filter-Map swap (unsafe)",
+      "description": "Swapping filter and map changes the result",
+      "code": "List<Integer> numbers = List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25, 30);\n\nnumbers.stream()\n    .map(n -> n * 2)\n    .filter(n -> n > 10)\n    .toList();"
+    },
+    {
+      "name": "Sorted + Limit",
+      "description": "Sort then limit - find top N elements",
+      "code": "List<Integer> numbers = List.of(30, 1, 15, 5, 20, 10, 25, 2, 8, 3);\n\nnumbers.stream()\n    .sorted()\n    .limit(5)\n    .toList();"
+    },
+    {
+      "name": "Distinct + Map",
+      "description": "Remove duplicates then transform",
+      "code": "List<Integer> numbers = List.of(1, 2, 2, 3, 3, 3, 4, 4, 4, 4);\n\nnumbers.stream()\n    .distinct()\n    .map(n -> n * 10)\n    .toList();"
+    },
+    {
+      "name": "Multi-operation pipeline",
+      "description": "Complex pipeline with multiple transformations",
+      "code": "List<Integer> numbers = List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25, 30);\n\nnumbers.stream()\n    .filter(n -> n % 2 == 0)\n    .map(n -> n * 3)\n    .sorted()\n    .limit(5)\n    .toList();"
+    },
+    {
+      "name": "Filter + Skip",
+      "description": "Filter and skip operations",
+      "code": "List<Integer> numbers = List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);\n\nnumbers.stream()\n    .filter(n -> n > 3)\n    .skip(2)\n    .toList();"
+    }
+  ]
+}
