@@ -100,7 +100,8 @@ streamlens/
 │   │   ├── store/            # Zustand state
 │   │   ├── services/         # API client
 │   │   └── types/            # TypeScript models
-│   └── dev-api/              # Node fallback for /api when the JVM backend is down
+│   ├── api/                  # Vercel Serverless Functions exposing /api/*
+│   └── dev-api/              # Node analysis engine (also the dev fallback for /api)
 ├── docker-compose.yml        # Backend + frontend + PostgreSQL
 └── test-data/                # Sample Java stream snippets
 ```
@@ -166,27 +167,53 @@ docker compose up --build
 
 ## Deployment
 
-### Vercel (frontend)
+### Vercel (frontend + analysis API)
 
-The repo includes `vercel.json` at the root, which tells Vercel to treat `frontend/` as the project root and build it as a Vite app:
+`frontend/vercel.json` tells Vercel to build `frontend/` as a Vite app:
 
 ```json
 {
-  "rootDirectory": "frontend",
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite"
 }
 ```
 
-Connect the Vercel project to this GitHub repo (Settings → Git → Connect Git Repository) so every push to `main` auto-deploys. Or deploy manually:
+Set the project's **Root Directory** to `frontend` (Settings → General → Root
+Directory) so this file, `src/`, `api/` and `dev-api/` are all inside the
+deployment. Connect the project to this GitHub repo (Settings → Git → Connect
+Git Repository) so every push to `main` auto-deploys. Or deploy manually:
 
 ```bash
 cd frontend
 npx vercel@latest --prod
 ```
 
-> **Note:** The backend (Spring Boot) is not deployed on Vercel. For the UI's **Analyze** button to work in production, deploy the backend elsewhere (Render, Railway, EC2) and set the `VITE_API_BASE_URL` environment variable to its URL (e.g. `https://your-backend.example.com/api`).
+The deployment is self-sufficient: `frontend/api/*.js` are Vercel Serverless
+Functions that expose the same `/api/*` contract as the Spring Boot service,
+backed by the Node engine in `frontend/dev-api/` (the very code the Vite dev
+server falls back to). **Analyze** therefore works on the public URL without a
+JVM anywhere — no environment variables required, since the UI calls `/api`
+same-origin.
+
+| Deployed route | Handler |
+|---|---|
+| `/api/analyze`, `/api/parse`, `/api/trace`, … | `frontend/api/<name>.js` → `dev-api/handler.js` |
+| everything else | static Vite build in `frontend/dist/` |
+
+Each function bundles the engine (~185 KB traced per function) and answers in
+tens of milliseconds, well inside the platform timeout.
+
+> **Note:** The Node engine is an analyser for integer stream pipelines, not a
+> replacement for the JVM backend. To use the real Spring Boot analyzer in
+> production instead, deploy it (Render, Railway, EC2) and set
+> `VITE_API_BASE_URL` to its URL (e.g. `https://your-backend.example.com/api`)
+> at build time — the UI then talks to the JVM and the serverless functions are
+> simply unused.
+
+Verify a deployment with `curl https://<your-app>.vercel.app/api/health`; the
+response reports which engine answered (`"engine": "streamlens-dev-api"`).
 
 ## REST API
 
@@ -200,6 +227,11 @@ npx vercel@latest --prod
 | `/api/counterexample` | POST | Generate counterexample |
 | `/api/benchmark` | POST | Benchmark original vs alternative |
 | `/api/explain` | POST | Generate multi-level explanations |
+| `/api/health` | GET | Liveness probe; reports which engine answered |
+
+Additional endpoints served by the Node engine in `frontend/dev-api/`:
+`/api/execute` (run a pipeline over an input), `/api/explain-transformation`,
+`/api/counterfactual`'s dependency graph, `/api/samples` and `/api/mode`.
 
 All endpoints are implemented by the Spring Boot backend and, identically, by the
 Node fallback in `frontend/dev-api/`. `GET /api/health` reports which engine

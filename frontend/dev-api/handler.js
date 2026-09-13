@@ -194,13 +194,25 @@ function handleExecute(body) {
   return { input, output: executePipeline(pipeline, input) };
 }
 
+const SAMPLE_PATHS = [
+  resolve(here, '../../test-data/samples.json'),   // repo checkout
+  resolve(here, '../test-data/samples.json'),      // function bundle layouts
+  resolve(process.cwd(), 'test-data/samples.json'),
+  resolve(process.cwd(), '../test-data/samples.json'),
+];
+
 function handleSamples() {
-  try {
-    const raw = readFileSync(resolve(here, '../../test-data/samples.json'), 'utf8');
-    return JSON.parse(raw);
-  } catch {
-    return { samples: [] };
+  for (const path of SAMPLE_PATHS) {
+    try {
+      return JSON.parse(readFileSync(path, 'utf8'));
+    } catch {
+      // try the next candidate
+    }
   }
+  return {
+    samples: [],
+    note: 'test-data/samples.json is not deployed with this function; the editor ships its own sample in src/types.',
+  };
 }
 
 const GET_ROUTES = {
@@ -244,15 +256,52 @@ function readBody(req, limit = 2 * 1024 * 1024) {
   });
 }
 
+/**
+ * Read the request body as an object.
+ *
+ * Serverless platforms (Vercel's `@vercel/node`) parse `application/json`
+ * before the handler runs and expose it as `req.body`, having already drained
+ * the stream — so check that first and only fall back to reading the socket.
+ */
+async function resolveBody(req) {
+  if (req.body !== undefined && req.body !== null) {
+    if (typeof req.body === 'string') return parseJsonBody(req.body);
+    if (Buffer.isBuffer(req.body)) return parseJsonBody(req.body.toString('utf8'));
+    return req.body;
+  }
+  return parseJsonBody(await readBody(req));
+}
+
+function parseJsonBody(text) {
+  if (!text || !text.trim()) return {};
+  try {
+    const parsed = JSON.parse(text);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    throw new HttpError(400, 'Request body must be valid JSON');
+  }
+}
+
 function sendJson(res, status, payload) {
-  const body = JSON.stringify(payload);
-  res.writeHead(status, {
-    'Content-Type': 'application/json; charset=utf-8',
-    'Content-Length': Buffer.byteLength(body),
+  const cors = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': '*',
     'Cache-Control': 'no-store',
+  };
+
+  // 204 must not carry a body — some platforms reject the response otherwise.
+  if (status === 204) {
+    res.writeHead(204, cors);
+    res.end();
+    return;
+  }
+
+  const body = JSON.stringify(payload);
+  res.writeHead(status, {
+    'Content-Type': 'application/json; charset=utf-8',
+    'Content-Length': Buffer.byteLength(body),
+    ...cors,
   });
   res.end(body);
 }
@@ -284,16 +333,7 @@ export async function handleApiRequest(req, res, next) {
     if (req.method === 'POST') {
       const route = POST_ROUTES[url];
       if (!route) throw new HttpError(404, `Unknown endpoint ${url}`);
-      const text = await readBody(req);
-      let body = {};
-      if (text.trim()) {
-        try {
-          body = JSON.parse(text);
-        } catch {
-          throw new HttpError(400, 'Request body must be valid JSON');
-        }
-      }
-      sendJson(res, 200, route(body || {}));
+      sendJson(res, 200, route(await resolveBody(req)));
       return true;
     }
 
@@ -378,6 +418,22 @@ export function streamlensFallbackApiPlugin(options = {}) {
           });
       });
     },
+  };
+}
+
+/**
+ * Handler factory for serverless platforms that pass Node's `(req, res)`,
+ * e.g. Vercel's `api/*.js` functions (`export default createFunctionHandler()`).
+ * The platform decides routing by file name, so the URL still drives dispatch.
+ */
+export function createFunctionHandler() {
+  return function streamlensApiFunction(req, res) {
+    return handleApiRequest(req, res, () => {
+      sendJson(res, 404, { error: `Unknown endpoint ${req.url}` });
+    }).catch((err) => {
+      if (!res.headersSent) sendJson(res, 500, { error: err.message });
+      else res.end();
+    });
   };
 }
 

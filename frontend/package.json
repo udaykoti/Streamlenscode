@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "dev:api": "node dev-api/handler.js",
-    "test:api": "node --test dev-api/engine.test.mjs"
+    "test:api": "node --test dev-api/engine.test.mjs dev-api/vercel-functions.test.mjs"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
