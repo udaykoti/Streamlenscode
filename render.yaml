@@ -18,8 +18,7 @@ services:
     staticPublishPath: dist
     envVars:
       - key: VITE_API_BASE_URL
-        sync: false
-        value: ""  # Set this to your backend URL after first deploy, e.g. https://streamlens-api.onrender.com/api
+        value: ""
 
 databases:
   - name: streamlens-db
