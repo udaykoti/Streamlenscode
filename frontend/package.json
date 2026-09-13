@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "dev:api": "node dev-api/handler.js",
+    "test:api": "node --test dev-api/engine.test.mjs"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",

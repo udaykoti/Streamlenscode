@@ -95,11 +95,12 @@ streamlens/
 │       │   └── explanation/  # 3-tier explanations
 │       └── model/            # DTOs
 ├── frontend/                 # React + Vite + Tailwind web app
-│   └── src/
-│       ├── components/       # editor, pipeline, trace, analysis, benchmark, explanation
-│       ├── store/            # Zustand state
-│       ├── services/         # API client
-│       └── types/            # TypeScript models
+│   ├── src/
+│   │   ├── components/       # editor, pipeline, trace, analysis, benchmark, explanation
+│   │   ├── store/            # Zustand state
+│   │   ├── services/         # API client
+│   │   └── types/            # TypeScript models
+│   └── dev-api/              # Node fallback for /api when the JVM backend is down
 ├── docker-compose.yml        # Backend + frontend + PostgreSQL
 └── test-data/                # Sample Java stream snippets
 ```
@@ -132,6 +133,24 @@ npm run dev
 ```
 
 The app runs on `http://localhost:3000` and proxies `/api` to the backend.
+
+#### Running the frontend without a JVM
+
+`npm run dev` works on its own: if nothing answers on port 8080, Vite serves
+`/api/*` from `frontend/dev-api/` — a dependency-free Node port of the analysis
+engines (parser, IR, counterfactual generation, semantic equivalence,
+counterexample search, tracer, benchmark, explanations) that speaks the same
+REST contract as the Spring Boot service. As soon as the real backend is up it
+takes over automatically, because the dev server probes `/api/health` first and
+proxies to the JVM when it responds.
+
+```bash
+npm run dev:api     # run the Node engine standalone on :8080
+npm run test:api    # engine tests (parser, int semantics, verdicts, HTTP API)
+```
+
+The fallback keeps the project's correctness rule: a lambda it cannot analyse
+produces **UNKNOWN**, never a false SAFE.
 
 ### Full Stack with Docker
 
@@ -181,6 +200,10 @@ npx vercel@latest --prod
 | `/api/counterexample` | POST | Generate counterexample |
 | `/api/benchmark` | POST | Benchmark original vs alternative |
 | `/api/explain` | POST | Generate multi-level explanations |
+
+All endpoints are implemented by the Spring Boot backend and, identically, by the
+Node fallback in `frontend/dev-api/`. `GET /api/health` reports which engine
+answered (`"engine": "streamlens-dev-api"` means the fallback is serving).
 
 ## Supported Operations
 

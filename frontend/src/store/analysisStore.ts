@@ -11,6 +11,7 @@ import type {
   Counterexample,
 } from '../types';
 import { SAMPLE_CODE } from '../types';
+import { analyzeCode } from '../services/api';
 
 interface AnalysisState {
   javaCode: string;
@@ -78,24 +79,9 @@ export const useAnalysisStore = create<AnalysisState>((set, get) => ({
     set({ isAnalyzing: true, error: null });
 
     try {
-      const response = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          javaCode,
-          testInput: testInput || undefined,
-          generateAlternatives: true,
-          runBenchmarks: true,
-          benchmarkIterations: 100,
-        }),
-      });
-
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error || 'Analysis failed');
-      }
-
-      const data: AnalysisResponse = await response.json();
+      // Uses the shared API client so an unreachable backend or a non-JSON
+      // error body produces an actionable message instead of a parse crash.
+      const data: AnalysisResponse = await analyzeCode(javaCode, testInput);
       set({
         parsedPipeline: data.parsedPipeline,
         dependencyGraph: data.dependencyGraph ?? null,
