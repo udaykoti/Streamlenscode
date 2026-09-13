@@ -42,6 +42,23 @@ export interface TraceResult {
   elementTraces: ElementTrace[];
 }
 
+export interface DependencyEdge {
+  fromIndex: number;
+  toIndex: number;
+  fromOperation: string;
+  toOperation: string;
+  type: string;
+  reason: string;
+  lambda?: string;
+}
+
+export interface DependencyGraphData {
+  hasDependencies: boolean;
+  totalDependencies: number;
+  dependencies: DependencyEdge[];
+  involvedIndices: number[];
+}
+
 export interface CandidateAlternative {
   originalOrder: string[];
   alternativeOrder: string[];
@@ -49,8 +66,26 @@ export interface CandidateAlternative {
   operationB: string;
   classification: string;
   reason: string;
+  efficiencyArgument: string;
+  dependencyNote: string;
   swappedPositions: { from: number; to: number };
   reorderedOperations: OperationInfo[];
+}
+
+export interface TraceStepMap {
+  operationIndex: number;
+  operationType: string;
+  inputValue: number | null;
+  outputValue: number | null;
+  passed: boolean;
+  description: string;
+}
+
+export interface ElementTraceMap {
+  inputValue: number;
+  outputValue: number | null;
+  accepted: boolean;
+  steps: TraceStepMap[];
 }
 
 export interface Counterexample {
@@ -58,6 +93,33 @@ export interface Counterexample {
   originalOutput: number[];
   alternativeOutput: number[];
   explanation: string;
+  found: boolean;
+  originalTrace?: ElementTraceMap[] | null;
+  alternativeTrace?: ElementTraceMap[] | null;
+}
+
+export interface EdgeCaseResult {
+  input: number[];
+  originalOutput: number[];
+  alternativeOutput: number[];
+  pass: boolean;
+}
+
+export interface EdgeCaseSuiteResult {
+  allPass: boolean;
+  cases: EdgeCaseResult[];
+  totalCases: number;
+}
+
+export interface VerdictExplanation {
+  classification: string;
+  staticReason: string;
+  hadDependency: boolean;
+  dependencies: DependencyEdge[];
+  dependencySummary: string;
+  explanation: string;
+  originalChain: string;
+  alternativeChain: string;
 }
 
 export interface AnalysisResultItem {
@@ -68,12 +130,13 @@ export interface AnalysisResultItem {
   classification: string;
   staticReason: string;
   dynamicReason?: string;
-  dynamicResult?: {
-    valuesMatch: boolean;
-    originalOutput: number[];
-    alternativeOutput: number[];
-  };
+  efficiencyArgument: string;
+  dependencyNote: string;
+  swappedPositions: { from: number; to: number };
   counterexample?: Counterexample;
+  edgeCaseResults?: EdgeCaseSuiteResult;
+  verdictExplanation?: VerdictExplanation;
+  benchmark?: BenchmarkResult;
 }
 
 export interface BenchmarkResult {
@@ -81,6 +144,13 @@ export interface BenchmarkResult {
   alternativeAvg: string;
   speedupRatio: number;
   iterations: number;
+  originalElementCount?: number;
+  alternativeElementCount?: number;
+  recommendation?: string;
+  elementsSavedPercent?: number;
+  datasetDescription?: string;
+  eligible?: boolean;
+  reason?: string;
 }
 
 export interface ExplanationItem {
@@ -91,10 +161,13 @@ export interface ExplanationItem {
 
 export interface AnalysisResponse {
   parsedPipeline: ParsedPipeline;
+  dependencyGraph?: DependencyGraphData;
+  dependencyReadable?: string;
   trace: TraceResult;
   alternatives: CandidateAlternative[];
   analysisResults: AnalysisResultItem[];
-  benchmark?: BenchmarkResult;
+  benchmark?: BenchmarkResult | null;
+  counterexample?: Counterexample;
   explanations: ExplanationItem[];
   error?: string;
 }

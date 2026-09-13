@@ -3,7 +3,7 @@ import Editor from '@monaco-editor/react';
 import { useAnalysisStore } from '../../store/analysisStore';
 
 export default function CodeEditor() {
-  const { javaCode, setJavaCode, isAnalyzing, analyze } = useAnalysisStore();
+  const { javaCode, setJavaCode, testInput, setTestInput, isAnalyzing, analyze } = useAnalysisStore();
   const editorRef = useRef(null);
 
   const handleEditorDidMount = (editor: any) => {
@@ -44,6 +44,28 @@ export default function CodeEditor() {
             </>
           )}
         </button>
+      </div>
+      <div className="flex items-center gap-2 px-4 py-1.5 bg-slate-900/80 border-b border-slate-700/50">
+        <label htmlFor="test-input" className="text-[10px] uppercase tracking-widest text-slate-500 shrink-0">
+          Test input
+        </label>
+        <input
+          id="test-input"
+          type="text"
+          value={testInput}
+          onChange={(e) => setTestInput(e.target.value)}
+          placeholder="comma-separated integers, e.g. 1,2,3,4,5"
+          className="flex-1 min-w-0 bg-slate-800 border border-slate-700 rounded-md px-2 py-1 text-xs font-mono text-slate-200 placeholder-slate-600 focus:outline-none focus:border-blue-500 transition-colors"
+        />
+        {testInput && (
+          <button
+            onClick={() => setTestInput('')}
+            className="text-[10px] text-slate-500 hover:text-slate-300 shrink-0"
+            title="Reset to the default dataset"
+          >
+            reset
+          </button>
+        )}
       </div>
       <div className="flex-1 min-h-0">
         <Editor

@@ -75,7 +75,7 @@ Why: map() changes the value filter() evaluates.
 | Layer | Technology |
 |---|---|
 | **Frontend** | React, TypeScript, Tailwind CSS, Monaco Editor, React Flow, Framer Motion, Zustand |
-| **Backend** | Java 21, Spring Boot 3.4, JavaParser |
+| **Backend** | Java 25, Spring Boot 3.4, JavaParser |
 | **Analysis** | Custom Stream IR, static semantic analysis, dynamic execution |
 | **Infrastructure** | Docker, Docker Compose (backend + frontend + PostgreSQL) |
 
@@ -108,7 +108,7 @@ streamlens/
 
 ### Prerequisites
 
-- **Java 21** (for the backend)
+- **Java 25** (for the backend)
 - **Node.js 18+** (for the frontend)
 - **Maven** (to build the backend)
 - **Docker** (optional — for the full stack)

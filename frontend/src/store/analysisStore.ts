@@ -7,6 +7,8 @@ import type {
   AnalysisResultItem,
   BenchmarkResult,
   ExplanationItem,
+  DependencyGraphData,
+  Counterexample,
 } from '../types';
 import { SAMPLE_CODE } from '../types';
 
@@ -17,10 +19,13 @@ interface AnalysisState {
   error: string | null;
 
   parsedPipeline: ParsedPipeline | null;
+  dependencyGraph: DependencyGraphData | null;
+  dependencyReadable: string;
   trace: TraceResult | null;
   alternatives: CandidateAlternative[];
   analysisResults: AnalysisResultItem[];
   benchmark: BenchmarkResult | null;
+  counterexample: Counterexample | null;
   explanations: ExplanationItem[];
   selectedAlternative: number | null;
 
@@ -46,10 +51,13 @@ export const useAnalysisStore = create<AnalysisState>((set, get) => ({
   error: null,
 
   parsedPipeline: null,
+  dependencyGraph: null,
+  dependencyReadable: '',
   trace: null,
   alternatives: [],
   analysisResults: [],
   benchmark: null,
+  counterexample: null,
   explanations: [],
   selectedAlternative: null,
 
@@ -90,10 +98,13 @@ export const useAnalysisStore = create<AnalysisState>((set, get) => ({
       const data: AnalysisResponse = await response.json();
       set({
         parsedPipeline: data.parsedPipeline,
+        dependencyGraph: data.dependencyGraph ?? null,
+        dependencyReadable: data.dependencyReadable ?? '',
         trace: data.trace,
         alternatives: data.alternatives,
         analysisResults: data.analysisResults,
-        benchmark: data.benchmark || null,
+        benchmark: data.benchmark ?? null,
+        counterexample: data.counterexample ?? null,
         explanations: data.explanations,
         isAnalyzing: false,
       });
@@ -107,10 +118,13 @@ export const useAnalysisStore = create<AnalysisState>((set, get) => ({
 
   reset: () => set({
     parsedPipeline: null,
+    dependencyGraph: null,
+    dependencyReadable: '',
     trace: null,
     alternatives: [],
     analysisResults: [],
     benchmark: null,
+    counterexample: null,
     explanations: [],
     selectedAlternative: null,
     error: null,
