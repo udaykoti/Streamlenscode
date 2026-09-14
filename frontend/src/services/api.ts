@@ -2,6 +2,15 @@ import type { AnalysisResponse } from '../types';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
 
+async function checkJsonResponse(response: Response): Promise<any> {
+  const contentType = response.headers.get('content-type');
+  if (!contentType || !contentType.includes('application/json')) {
+    const text = await response.text();
+    throw new Error(`Backend unavailable: ${response.status} ${response.statusText}. Received: ${text.substring(0, 200)}`);
+  }
+  return response.json();
+}
+
 export async function analyzeCode(javaCode: string, testInput?: string): Promise<AnalysisResponse> {
   const response = await fetch(`${API_BASE}/analyze`, {
     method: 'POST',
@@ -15,12 +24,13 @@ export async function analyzeCode(javaCode: string, testInput?: string): Promise
     }),
   });
 
+  const json = await checkJsonResponse(response);
+  
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Analysis failed');
+    throw new Error(json.error || 'Analysis failed');
   }
 
-  return response.json();
+  return json;
 }
 
 export async function parseCode(javaCode: string) {
@@ -30,12 +40,13 @@ export async function parseCode(javaCode: string) {
     body: JSON.stringify({ javaCode }),
   });
 
+  const json = await checkJsonResponse(response);
+
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Parse failed');
+    throw new Error(json.error || 'Parse failed');
   }
 
-  return response.json();
+  return json;
 }
 
 export async function traceExecution(javaCode: string, input: number[]) {
@@ -45,15 +56,17 @@ export async function traceExecution(javaCode: string, input: number[]) {
     body: JSON.stringify({ javaCode, input }),
   });
 
+  const json = await checkJsonResponse(response);
+
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Trace failed');
+    throw new Error(json.error || 'Trace failed');
   }
 
-  return response.json();
+  return json;
 }
 
 export async function checkHealth() {
   const response = await fetch(`${API_BASE}/health`);
-  return response.json();
+  const json = await checkJsonResponse(response);
+  return json;
 }
