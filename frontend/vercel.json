@@ -4,7 +4,7 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "https://streamlens-backend.onrender.com/api/$1" },
+    { "source": "/api/(.*)", "destination": "https://free-pandas-exist.loca.lt/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [

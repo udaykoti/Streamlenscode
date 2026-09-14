@@ -18,7 +18,7 @@
     <description>Semantics-aware Counterfactual Java Stream Analyzer</description>
 
     <properties>
-        <java.version>21</java.version>
+        <java.version>17</java.version>
         <javaparser.version>3.26.4</javaparser.version>
     </properties>
 

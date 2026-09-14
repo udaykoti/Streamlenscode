@@ -1,26 +1,7 @@
 ```
 # Dependencies
 node_modules/
-
-# Environment variables
-.env
-.env.local
-.env.*
-
-# Logs
-*.log
-
-# Temporary files
-*.tmp
-*.swp
-*.swo
-
-# Build outputs
-dist/
-build/
-coverage/
-htmlcov/
-*.out
+target/
 
 # Python
 __pycache__/
@@ -43,67 +24,35 @@ nosetests.xml
 coverage.xml
 *.cover
 *.log
-.git/modules/
-*.sublime-workspace
+*.pot
+*.po
+*~
 .pytest_cache/
 .mypy_cache/
 .hypothesis/
+.eggs/
+*.egg-info/
+.installed.cfg
+.pep8
+.flake8
+.isort.cfg
+.black
+.pyup.yml
+.requirements.bak
+.coveralls.yml
+.prospector.yaml
+.landscape.yaml
+.devcontainer/
+.vscode/settings.json
 
-# Compiled and binary files
+# Java
 *.class
-*.o
-*.so
-*.a
-*.dll
-*.exe
 *.jar
 *.war
+*.ear
 *.zip
-*.gz
-*.tar
-*.tgz
-*.bz2
-*.xz
-*.7z
-*.rar
-*.zst
-*.lz4
-*.lzh
-*.cab
-*.arj
-*.rpm
-*.deb
-*.Z
-*.lz
-*.lzo
-
-# OS generated files
+*.tar.gz
+*.tar.bz2
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
-desktop.ini
-
-# IDE specific
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Gradle
-.gradle/
-build/
-
-# Target
-target/
-
-# Julia
-julia-*/
-
-# Zig
-zig*/
 ```
